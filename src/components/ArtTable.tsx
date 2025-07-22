@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import axios from "axios";
+
 import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 
-interface ArtData {
+interface Artwork {
   id: number;
   title: string;
   place_of_origin: string;
@@ -16,54 +17,62 @@ interface ArtData {
   date_end: number;
 }
 
+const ITEMS_PER_PAGE = 12;
+
 const ArtTable: React.FC = () => {
-  const [artworks, setArtworks] = useState<ArtData[]>([]);
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [first, setFirst] = useState(0);
-  const [rows, setRows] = useState(12);
-  const [selectedIds, setSelectedIds] = useState<{ [id: number]: boolean }>({});
+  const [pageStartIndex, setPageStartIndex] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedArtworkIds, setSelectedArtworkIds] = useState<Record<number, boolean>>({});
 
-  const fetchData = async (page: number, pageSize: number) => {
+  // Derive selected artworks based on ID map
+  const selectedArtworks = artworks.filter(art => selectedArtworkIds[art.id]);
+
+  const fetchArtworks = useCallback(async (page: number, limit: number) => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await axios.get("https://api.artic.edu/api/v1/artworks", {
+      const response = await axios.get("https://api.artic.edu/api/v1/artworks", {
         params: {
           page,
-          limit: pageSize,
+          limit,
           fields: "id,title,place_of_origin,artist_display,inscriptions,date_start,date_end"
         }
       });
-      setArtworks(res.data.data);
-      setTotalRecords(res.data.pagination.total);
-    } catch (e) {
+
+      setArtworks(response.data.data);
+      setTotalRecords(response.data.pagination.total);
+    } catch (err) {
+      console.error("Error fetching artwork data:", err);
+      setError("Failed to load artwork data. Please try again.");
       setArtworks([]);
       setTotalRecords(0);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
-    fetchData(1, rows);
-  }, [rows]);
+    const initialPage = 1;
+    fetchArtworks(initialPage, ITEMS_PER_PAGE);
+  }, [fetchArtworks]);
 
-  const onPageChange = (event: any) => {
-    setRows(event.rows);
-    setFirst(event.first);
+  const handlePageChange = (event: any) => {
     const newPage = Math.floor(event.first / event.rows) + 1;
-    fetchData(newPage, event.rows);
+    setPageStartIndex(event.first);
+    fetchArtworks(newPage, event.rows);
   };
 
-  const selection = artworks.filter(artwork => selectedIds[artwork.id]);
+  const handleSelectionChange = (e: any) => {
+    const currentPageIds = artworks.map(art => art.id);
+    const newlySelectedIds = e.value.map((item: Artwork) => item.id);
 
-  const onSelectionChange = (e: any) => {
-    const currentPageIds = artworks.map(a => a.id);
-    const selectedOnPage = e.value.map((item: ArtData) => item.id);
-    
-    setSelectedIds(prev => {
+    setSelectedArtworkIds(prev => {
       const updated = { ...prev };
       currentPageIds.forEach(id => {
-        if (selectedOnPage.includes(id)) {
+        if (newlySelectedIds.includes(id)) {
           updated[id] = true;
         } else {
           delete updated[id];
@@ -73,13 +82,17 @@ const ArtTable: React.FC = () => {
     });
   };
 
+  const handleClearSelection = () => {
+    setSelectedArtworkIds({});
+  };
+
   const renderSelectionSummary = () => {
-    const count = Object.values(selectedIds).filter(Boolean).length;
+    const selectedCount = Object.values(selectedArtworkIds).filter(Boolean).length;
     return (
       <div style={{ margin: "1em 0" }}>
-        <span>{count} items selected</span>
-        {count > 0 && (
-          <button onClick={() => setSelectedIds({})} style={{ marginLeft: "1em" }}>
+        <span>{selectedCount} item{selectedCount !== 1 ? "s" : ""} selected</span>
+        {selectedCount > 0 && (
+          <button onClick={handleClearSelection} style={{ marginLeft: "1em" }}>
             Clear All
           </button>
         )}
@@ -88,25 +101,28 @@ const ArtTable: React.FC = () => {
   };
 
   return (
-    <div className="art-table-container">
+    <div className="art-table-container" style={{ padding: "1rem" }}>
       {renderSelectionSummary()}
+
+      {error && <div style={{ color: "red", marginBottom: "1em" }}>{error}</div>}
+
       <DataTable
         value={artworks}
         lazy
         paginator
-        rows={rows}
+        rows={ITEMS_PER_PAGE}
         totalRecords={totalRecords}
         dataKey="id"
-        onPage={onPageChange}
+        onPage={handlePageChange}
         loading={loading}
-        first={first}
+        first={pageStartIndex}
         scrollable
-        scrollHeight="calc(100vh - 120px)"
-        selection={selection}
-        onSelectionChange={onSelectionChange}
+        scrollHeight="calc(100vh - 180px)"
+        selection={selectedArtworks}
+        onSelectionChange={handleSelectionChange}
         selectionMode="multiple"
       >
-        <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
+        <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
         <Column field="title" header="Title" sortable />
         <Column field="place_of_origin" header="Place of Origin" sortable />
         <Column field="artist_display" header="Artist" sortable />
