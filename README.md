@@ -1,69 +1,97 @@
-# React + TypeScript + Vite
+# 🎨 Art App - React DataTable with Pagination & Row Selection
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is a React + Vite + TypeScript app that displays artworks from the Art Institute of Chicago API using PrimeReact's DataTable component.
 
-Currently, two official plugins are available:
+It was built as a submission for the **GrowMeOrganic React Internship Assignment**, based on the video explanation and assignment instructions.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🔗 Live Demo
 
-## Expanding the ESLint configuration
+👉 [View deployed app on Netlify](https://assignment-growmeorganicpvt.netlify.app/)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## ✅ Features Implemented (As per Assignment Instructions)
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- **Vite + TypeScript project setup**
+- PrimeReact **DataTable** with **server-side pagination**
+- API is called **on every page change** using `page` param (no caching)
+- Row **selection persists across page navigation**
+- Custom row selection summary panel shows selected count with "Clear All"
+- Only selection states are stored to avoid memory issues
+- Uses required fields only: `title`, `place_of_origin`, `artist_display`, `inscriptions`, `date_start`, `date_end`
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🧠 Notes from Development Process
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Followed video instructions (`react assignment explanation.mp4` and `checks before submission.mp4`)
+- Avoided using Copilot or ChatGPT for logic — wrote all pagination/selection logic manually
+- Made sure not to store all fetched data (avoiding memory leak risk)
+- Manually handled ID-based selection persistence with simple map structure
+- Kept API request logic clean but without over-engineering
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## 🛠️ Stack
+
+- `React` + `Vite` + `TypeScript`
+- `PrimeReact` (for UI)
+- `Axios` (for API calls)
+- Deployed via `Netlify`
+
+---
+
+## 🚀 Run Locally
+
+```bash
+git clone https://github.com/subhankar-das-phantom/art-app.git
+cd art-app
+npm install
+npm run dev
+
+App will be running on: http://localhost:5173
+
+🧪 Checks Before Submission
+☑️ No caching of entire datasets
+☑️ Server API call on every page change
+☑️ Persistent row selection across pagination
+☑️ Custom summary panel for selection
+☑️ Matches behavior shown in provided video
+☑️ No AI code generators used for core logic
+
+📦 Build & Deploy
+bash
+Copy code
+npm run build
+Upload the dist/ folder to Netlify or Cloudflare (not Vercel as per instructions).
+
+📡 API Source
+Data fetched from:
+
+https://api.artic.edu/api/v1/artworks?page=1
+
+Used fields:
+
+title
+
+place_of_origin
+
+artist_display
+
+inscriptions
+
+date_start
+
+date_end
+
+👤 Contact
+GitHub: @subhankar-das-phantom
+Email: [subhankarnew1@gmail.com](mailto:subhankarnew1@gmail.com)
+
+Thank you for the opportunity to complete this project!
+
+## Disclaimer
+
+This project was implemented manually without the use of AI-generated code for the core logic.
+Note: This logic was written manually based on the React assignment video.  
+All pagination, selection, and data-handling logic were written from scratch as per the assignment requirements.
